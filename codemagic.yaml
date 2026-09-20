@@ -1,32 +1,42 @@
 # Codemagic configuration file
-# Place this at the root of your repository
+# Isko repository ke bilkul root par save karein.
 
 workflows:
-  android-release-apk:
-    name: Build Android Release APK
-    max_build_duration: 30
-    instance_type: mac_mini_m1
+  android-build:
+    name: Android Build with Firebase
+    max_build_duration: 60
+
     environment:
+      java: 17
       groups:
-        - android_signing 
-      vars:
-        PACKAGE_NAME: "com.example.yourapp"
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: 'main'   
-          include: true
-          source: true
+        - firebase_credentials # Codemagic UI me ye group banayein aur isme "FIREBASE_SECRET" variable dalein
+
     scripts:
-      - name: Set up local.properties
+      - name: Setup Firebase File
         script: |
-          # FIXED: Writing directly to root folder instead of /android/
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-      - name: Build Android release APK
+          # Agar aapne variable set kiya hai, to ye script automatic aapki firebase file bana degi.
+          # Agar variable nahi hai, to ye step skip ho jayega aur error nahi dega.
+          if [ -z "$FIREBASE_SECRET" ]; then
+            echo "Firebase secret not found. Skipping auto-creation. Make sure google-services.json is in your app/ folder."
+          else
+            echo "$FIREBASE_SECRET" | base64 --decode > app/google-services.json
+            echo "Firebase configuration file successfully restored into app folder!"
+          fi
+
+      - name: Install Gradle 9.3.1
         script: |
-          # FIXED: Removed 'cd android' since gradlew is at the root
-          chmod +x gradlew 
-          ./gradlew assembleRelease
+          curl -L https://services.gradle.org/distributions/gradle-9.3.1-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          export GRADLE_HOME="$PWD/gradle-9.3.1"
+          export PATH="$GRADLE_HOME/bin:$PATH"
+          gradle --version
+
+      - name: Build Android APK
+        script: |
+          export GRADLE_HOME="$PWD/gradle-9.3.1"
+          export PATH="$GRADLE_HOME/bin:$PATH"
+          # App ko build karne ke liye command
+          gradle assembleDebug
+
     artifacts:
-      - app/build/outputs/apk/release/*.apk
+      - app/build/outputs/apk/debug/*.apk
