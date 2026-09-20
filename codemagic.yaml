@@ -16,7 +16,9 @@ workflows:
       events:
         - push
       branch_patterns:
-        - target: main
+        - pattern: 'main'   # <-- FIXED: Correct syntax for branch tracking
+          include: true
+          source: true
     scripts:
       - name: Set up local.properties
         script: |
