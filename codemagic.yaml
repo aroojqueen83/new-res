@@ -1,29 +1,16 @@
 workflows:
-  android-release-apk:
-    name: Build Android Release APK
+  native-android-release-apk:
+    name: Build Native Android Release APK
     max_build_duration: 30
-    instance_type: mac_mini_m1
     environment:
       groups:
-        - android_signing # Create this group in Codemagic UI to hold your keystore variables
-      vars:
-        PACKAGE_NAME: "com.example.yourapp"
-      flutter: stable
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - target: main
+        - android_signing
     scripts:
-      - name: Set up local.properties
+      - name: Set Android SDK location
         script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
-      - name: Get Flutter packages
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+      - name: Build Android release APK
         script: |
-          flutter packages pub get
-      - name: Build Flutter APK Release
-        script: |
-          # Use --split-per-abi if you want smaller, device-specific APKs
-          flutter build apk --release
+          ./gradlew assembleRelease
     artifacts:
-      - build/app/outputs/flutter-apk/*release.apk
+      - app/build/outputs/apk/release/*.apk
