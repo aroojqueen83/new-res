@@ -7,13 +7,26 @@ workflows:
       java: 17
 
     scripts:
-      - name: Make Gradle executable
+      - name: Install Gradle 9.3.1
         script: |
-          chmod +x ./gradlew
+          curl -L https://services.gradle.org/distributions/gradle-9.3.1-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          export GRADLE_HOME="$PWD/gradle-9.3.1"
+          export PATH="$GRADLE_HOME/bin:$PATH"
+          gradle --version
 
-      - name: Build Android APK
+      - name: Build Release APK
         script: |
-          ./gradlew assembleRelease
+          export GRADLE_HOME="$PWD/gradle-9.3.1"
+          export PATH="$GRADLE_HOME/bin:$PATH"
+          gradle assembleRelease
+
+      - name: Build Release AAB
+        script: |
+          export GRADLE_HOME="$PWD/gradle-9.3.1"
+          export PATH="$GRADLE_HOME/bin:$PATH"
+          gradle bundleRelease
 
     artifacts:
       - app/build/outputs/apk/release/*.apk
+      - app/build/outputs/bundle/release/*.aab
