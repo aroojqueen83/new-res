@@ -8,31 +8,25 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       groups:
-        - android_signing # Ensure this matches your Codemagic UI group name
+        - android_signing 
       vars:
         PACKAGE_NAME: "com.example.yourapp"
-      flutter: stable
     triggering:
       events:
         - push
       branch_patterns:
-        - pattern: 'main'   # <-- FIXED: Correct syntax for branch tracking
+        - pattern: 'main'   
           include: true
           source: true
     scripts:
       - name: Set up local.properties
         script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
-      - name: Get Flutter packages
-        script: |
-          flutter packages pub get
+          # FIXED: Writing directly to root folder instead of /android/
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
       - name: Build Android release APK
         script: |
-          # Navigate into the subfolder where gradlew exists
-          cd android 
-          # Ensure execution permissions for gradlew on the CI runner
+          # FIXED: Removed 'cd android' since gradlew is at the root
           chmod +x gradlew 
-          # Run the release build
           ./gradlew assembleRelease
     artifacts:
-      - android/app/build/outputs/apk/release/*.apk
+      - app/build/outputs/apk/release/*.apk
