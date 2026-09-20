@@ -15,18 +15,11 @@ workflows:
           export PATH="$GRADLE_HOME/bin:$PATH"
           gradle --version
 
-      - name: Build Release APK
+      - name: Build Android APK
         script: |
           export GRADLE_HOME="$PWD/gradle-9.3.1"
           export PATH="$GRADLE_HOME/bin:$PATH"
-          gradle assembleRelease
-
-      - name: Build Release AAB
-        script: |
-          export GRADLE_HOME="$PWD/gradle-9.3.1"
-          export PATH="$GRADLE_HOME/bin:$PATH"
-          gradle bundleRelease
+          gradle assembleDebug
 
     artifacts:
-      - app/build/outputs/apk/release/*.apk
-      - app/build/outputs/bundle/release/*.aab
+      - app/build/outputs/apk/debug/*.apk
